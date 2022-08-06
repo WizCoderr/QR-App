@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Qr Code</string>
+    <string name="enter_the_link">Enter the link</string>
+    <string name="generate">Generate</string>
+    <string name="open_link">open link</string>
+    <string name="scan">Scan Now</string>
+    <string name="what_you_want_to_do">What you want to do</string>
+    <string name="generate_btn">Generate</string>
+    <string name="scan_now">Scan Now</string>
+    <string name="save">Save</string>
+</resources>
