@@ -67,4 +67,5 @@ class QrMakkerActivity : AppCompatActivity() {
         )
     }
 
+
 }
