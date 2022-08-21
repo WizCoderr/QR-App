@@ -31,7 +31,6 @@ class QrScannerActivity : AppCompatActivity() {
     private lateinit var resultData: TextView
     private lateinit var result:String
     private lateinit var uri:Uri
-    val  COMPILE_TIME_CONST = 123
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_qr_scanner)
@@ -42,12 +41,14 @@ class QrScannerActivity : AppCompatActivity() {
         result = resultData.text.toString()
         scannerView.setOnClickListener {scanner.startPreview()}
         openLink.setOnClickListener {
-            openUrl(result);
+            openUrl(result)
         }
     }
     private fun openUrl(result: String) {
         uri = Uri.parse(result)
-
+        val intent = Intent(Intent.ACTION_VIEW)
+        intent.data = uri
+        startActivity(intent)
     }
 
 
@@ -56,7 +57,7 @@ class QrScannerActivity : AppCompatActivity() {
         requestForCamara()
     }
 
-    private fun requestForCamara() = Dexter.withContext(this)
+    private fun requestForCamara() = withContext(this)
         .withPermission(Manifest.permission.CAMERA)
         .withListener(object : PermissionListener {
             override fun onPermissionGranted(permissionGrantedResponse: PermissionGrantedResponse?) {
@@ -76,13 +77,6 @@ class QrScannerActivity : AppCompatActivity() {
                 p1: PermissionToken?
             ) {}
 
-            fun onPermissionRationaleShouldBeShown(
-                permissionRequest: PermissionRequest?,
-                permissionToken: PermissionToken
-            ) {
-                Log.d(TAG, "onPermissionRationaleShouldBeShown: "+ permissionRequest.toString())
-                permissionToken.continuePermissionRequest()
-            }
         })
         .check()
 

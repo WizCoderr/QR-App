@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#444444"
     tools:context=".QrScannerActivity">
 
     <TextView
@@ -18,19 +19,15 @@
 
     <com.budiyev.android.codescanner.CodeScannerView
         android:id="@+id/scanner_view"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="421dp"
+        android:layout_height="577dp"
         app:frameColor="@color/white"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:maskColor="#7000">
-
-    </com.budiyev.android.codescanner.CodeScannerView>
-
+        app:maskColor="#7000" />
     <androidx.appcompat.widget.LinearLayoutCompat
-        android:id="@+id/linearLayoutCompat2"
+        android:id="@+id/layout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -40,9 +37,12 @@
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/link_btn"
             android:layout_width="wrap_content"
+            android:background="@drawable/btn_bg"
+            android:layout_margin="23dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/open_link" />
 
     </androidx.appcompat.widget.LinearLayoutCompat>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
