@@ -1,59 +1,67 @@
 package com.sayam.qrcode
 
 import android.Manifest
-import android.content.ActivityNotFoundException
-import android.content.ContentValues.TAG
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
-import android.view.View
-import android.webkit.PermissionRequest
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.budiyev.android.codescanner.CodeScanner
-import com.budiyev.android.codescanner.CodeScannerView
-import com.budiyev.android.codescanner.DecodeCallback
-import com.google.zxing.Result
-import com.karumi.dexter.Dexter
-import com.karumi.dexter.Dexter.*
+import com.budiyev.android.codescanner.*
+import com.karumi.dexter.Dexter.withContext
 import com.karumi.dexter.PermissionToken
 import com.karumi.dexter.listener.PermissionDeniedResponse
 import com.karumi.dexter.listener.PermissionGrantedResponse
+import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.single.PermissionListener
 
 class QrScannerActivity : AppCompatActivity() {
     private lateinit var scannerView: CodeScannerView
     private lateinit var scanner: CodeScanner
-    private lateinit var openLink: Button
     private lateinit var resultData: TextView
-    private lateinit var result:String
-    private lateinit var uri:Uri
+    private lateinit var result: String
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_qr_scanner)
         init()
-        scanner.decodeCallback = DecodeCallback { result: Result ->
-            runOnUiThread { resultData.text = result.toString() }
+        scanner.decodeCallback = DecodeCallback {
+            runOnUiThread {
+                resultData.text = it.text
+                result = resultData.text.toString()
+            }
         }
-        result = resultData.text.toString()
-        scannerView.setOnClickListener {scanner.startPreview()}
+        scanner.errorCallback = ErrorCallback {
+            runOnUiThread {
+                Toast.makeText(
+                    this@QrScannerActivity,
+                    "Camera initialization error: ${it.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+            scannerView.setOnClickListener { scanner.startPreview() }
+
+        }
+        val openLink:Button = findViewById(R.id.open_link)
         openLink.setOnClickListener {
-            openUrl(result)
+            if(result.isEmpty())
+                Toast.makeText(
+                    this@QrScannerActivity,
+                    "Please Scan a qr Code",
+                    Toast.LENGTH_LONG
+                ).show()
+            else
+                openInChrome(result)
         }
-    }
-    private fun openUrl(result: String) {
-        uri = Uri.parse(result)
-        val intent = Intent(Intent.ACTION_VIEW)
-        intent.data = uri
-        startActivity(intent)
     }
 
+    private fun openInChrome(result: String) {
+        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(result)))
+    }
 
     override fun onResume() {
         super.onResume()
+        scanner.startPreview()
         requestForCamara()
     }
 
@@ -73,17 +81,22 @@ class QrScannerActivity : AppCompatActivity() {
             }
 
             override fun onPermissionRationaleShouldBeShown(
-                p0: com.karumi.dexter.listener.PermissionRequest?,
+                p0: PermissionRequest?,
                 p1: PermissionToken?
             ) {}
-
         })
         .check()
 
     private fun init() {
-        openLink = findViewById(R.id.link_btn)
         scannerView = findViewById(R.id.scanner_view)
         scanner = CodeScanner(this, scannerView)
         resultData = findViewById(R.id.result)
+        scanner.camera = CodeScanner.CAMERA_BACK
+        scanner.formats = CodeScanner.ALL_FORMATS
+        scanner.autoFocusMode = AutoFocusMode.SAFE
+        scanner.scanMode = ScanMode.SINGLE
+        scanner.isAutoFocusEnabled = true
+        scanner.isFlashEnabled = true
+        result = String()
     }
 }
