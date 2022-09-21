@@ -16,6 +16,7 @@ import android.widget.*
 import androidmads.library.qrgenearator.QRGContents
 import androidmads.library.qrgenearator.QRGEncoder
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.*
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.gms.ads.*
@@ -23,13 +24,13 @@ import java.io.OutputStream
 
 @Suppress("DEPRECATION", "CAST_NEVER_SUCCEEDS")
 class QrMakkerActivity : AppCompatActivity() {
-    private lateinit var link:EditText
-    private lateinit var qrImage:ImageView
-     private lateinit var generate:Button
-     private lateinit var save:Button
+    private lateinit var link:AppCompatEditText
+    private lateinit var qrImage:AppCompatImageView
+     private lateinit var generate:AppCompatButton
+     private lateinit var save:AppCompatButton
      private val REQUEST_CODE:Int = 123
-    private lateinit var scan:Button
-    private lateinit var linerLayout: LinearLayout
+    private lateinit var scan:AppCompatButton
+    private lateinit var linerLayout: LinearLayoutCompat
     private lateinit var outputStream: OutputStream
     private lateinit var oldDrawable:Drawable
     private  lateinit var mAdView:AdView
