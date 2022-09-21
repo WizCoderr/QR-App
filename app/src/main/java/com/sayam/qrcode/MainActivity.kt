@@ -40,7 +40,7 @@ class MainActivity : AppCompatActivity() {
         }
         qrImage.alpha = 0f
         qrImage.animate().setDuration(1500).alpha(1f).withEndAction {
-            val i: Intent = Intent(this, QrMakkerActivity::class.java)
+            val i = Intent(this, QrMakkerActivity::class.java)
             startActivity(i)
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
             finish()
