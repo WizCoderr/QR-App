@@ -1,24 +1,27 @@
 package com.sayam.qrcode
 
 import android.Manifest
+import android.content.ContentResolver
+import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
-import android.os.Environment
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.Toast
+import android.provider.MediaStore
+import android.widget.*
 import androidmads.library.qrgenearator.QRGContents
 import androidmads.library.qrgenearator.QRGEncoder
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import java.io.*
+import com.google.android.gms.ads.*
+import java.io.OutputStream
 
+@Suppress("DEPRECATION", "CAST_NEVER_SUCCEEDS")
 class QrMakkerActivity : AppCompatActivity() {
     private lateinit var link:EditText
     private lateinit var qrImage:ImageView
@@ -26,11 +29,18 @@ class QrMakkerActivity : AppCompatActivity() {
      private lateinit var save:Button
      private val REQUEST_CODE:Int = 123
     private lateinit var scan:Button
+    private lateinit var linerLayout: LinearLayout
     private lateinit var outputStream: OutputStream
     private lateinit var oldDrawable:Drawable
+    private  lateinit var mAdView:AdView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_qr_makker)
+        linerLayout = findViewById(R.id.linerLayout)
+        //Ads
+        mAdView = findViewById(R.id.adView)
+        val adRequest = AdRequest.Builder().build()
+        mAdView.loadAd(adRequest)
         link = findViewById(R.id.et_link)
         qrImage = findViewById(R.id.qrImg)
         generate = findViewById(R.id.generate)
@@ -52,19 +62,99 @@ class QrMakkerActivity : AppCompatActivity() {
                 }
             }
         }
-
+        save.setOnClickListener {
+            if(ContextCompat.checkSelfPermission(this@QrMakkerActivity,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
+                saveImage()
+            }else{
+                ActivityCompat.requestPermissions(this@QrMakkerActivity, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),REQUEST_CODE)
+            }
+        }
         scan.setOnClickListener {
             val intent = Intent(this@QrMakkerActivity,QrScannerActivity::class.java)
             startActivity(intent)
         }
+        // Ad Functions
+        mAdView.adListener = object: AdListener() {
+            override fun onAdClicked() {
+                super.onAdClicked()
+            }
+
+            override fun onAdClosed() {
+                super.onAdClosed()
+            }
+
+            override fun onAdFailedToLoad(adError : LoadAdError) {
+                super.onAdFailedToLoad(adError)
+                mAdView.loadAd(adRequest)
+            }
+
+            override fun onAdImpression() {
+                super.onAdImpression()
+            }
+
+            override fun onAdLoaded() {
+               super.onAdLoaded()
+            }
+
+            override fun onAdOpened() {
+                super.onAdOpened()
+            }
+        }
     }
 
-    private fun askPermission() {
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-            REQUEST_CODE
-        )
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        if (requestCode == REQUEST_CODE){
+            if (grantResults.isNotEmpty() &&grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                saveImage()
+            }else{
+                Toast.makeText(
+                    this@QrMakkerActivity,
+                    "Please provide the permission"
+                    ,Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
+
+    private fun saveImage() {
+        val contentResolver:ContentResolver = contentResolver
+        val image:Uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+        }else{
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+        }
+        val contentValues = ContentValues()
+        contentValues.put(
+            MediaStore.Images.Media.DISPLAY_NAME,
+            System.currentTimeMillis().toString() + ".jpg"
+        )
+        contentValues.put(
+            MediaStore.Images.Media.MIME_TYPE,
+            "images/"
+        )
+        val uri: Uri = contentResolver.insert(image,contentValues)!!
+        try {
+            val bitmapDrawable = qrImage.drawable as BitmapDrawable
+            val bitmap = bitmapDrawable.bitmap
+            outputStream = contentResolver.openOutputStream(uri)!!
+            bitmap.compress(Bitmap.CompressFormat.JPEG,100,outputStream)
+            outputStream.flush()
+            outputStream.close()
+            Toast.makeText(
+                this@QrMakkerActivity,
+                "Qr Saved",
+                Toast.LENGTH_LONG
+            ).show()
+        }catch (e:Exception){
+            e.printStackTrace()
+        }
+    }
+
 
 }

@@ -40,7 +40,6 @@ class QrScannerActivity : AppCompatActivity() {
                 ).show()
             }
             scannerView.setOnClickListener { scanner.startPreview() }
-
         }
         val openLink:Button = findViewById(R.id.open_link)
         openLink.setOnClickListener {
@@ -51,12 +50,8 @@ class QrScannerActivity : AppCompatActivity() {
                     Toast.LENGTH_LONG
                 ).show()
             else
-                openInChrome(result)
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(result)))
         }
-    }
-
-    private fun openInChrome(result: String) {
-        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(result)))
     }
 
     override fun onResume() {
