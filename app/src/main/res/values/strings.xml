@@ -8,4 +8,5 @@
     <string name="generate_btn">Generate</string>
     <string name="scan_now">Scan Now</string>
     <string name="save">Save</string>
+    <string name="share">Share</string>
 </resources>

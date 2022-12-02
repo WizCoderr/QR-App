@@ -3,11 +3,11 @@ package com.sayam.qrcode
 import android.Manifest
 import android.content.ContentResolver
 import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -19,7 +19,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.*
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import androidx.core.graphics.drawable.toBitmap
 import com.google.android.gms.ads.*
+import java.io.File
+import java.io.FileOutputStream
 import java.io.OutputStream
 
 @Suppress("DEPRECATION", "CAST_NEVER_SUCCEEDS")
@@ -28,25 +32,27 @@ class QrMakkerActivity : AppCompatActivity() {
     private lateinit var qrImage:AppCompatImageView
      private lateinit var generate:AppCompatButton
      private lateinit var save:AppCompatButton
-     private val REQUEST_CODE:Int = 123
+     private lateinit var share:AppCompatButton
+      val code: Int = 123
     private lateinit var scan:AppCompatButton
-    private lateinit var linerLayout: LinearLayoutCompat
     private lateinit var outputStream: OutputStream
-    private lateinit var oldDrawable:Drawable
     private  lateinit var mAdView:AdView
+    private  lateinit var bitmapDrawable: BitmapDrawable
+    private lateinit var bitmap:Bitmap
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_qr_makker)
-        linerLayout = findViewById(R.id.linerLayout)
         //Ads
-        mAdView = findViewById(R.id.adView)
+        mAdView = findViewById(R.id.ads)
         val adRequest = AdRequest.Builder().build()
         mAdView.loadAd(adRequest)
         link = findViewById(R.id.et_link)
         qrImage = findViewById(R.id.qrImg)
         generate = findViewById(R.id.generate)
         save = findViewById(R.id.save)
-        oldDrawable = qrImage.drawable
+        share = findViewById(R.id.share)
+//        bitmapDrawable = qrImage.drawable as BitmapDrawable
+        bitmap = qrImage.drawable.toBitmap()
         scan = findViewById(R.id.scan)
         generate.setOnClickListener {
             val data = link.text.toString()
@@ -63,12 +69,17 @@ class QrMakkerActivity : AppCompatActivity() {
                 }
             }
         }
+        share.setOnClickListener{
+            shareImage(bitmap)
+        }
         save.setOnClickListener {
             if(ContextCompat.checkSelfPermission(this@QrMakkerActivity,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
                 saveImage()
             }else{
-                ActivityCompat.requestPermissions(this@QrMakkerActivity, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),REQUEST_CODE)
+                ActivityCompat.requestPermissions(this@QrMakkerActivity, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                    code
+                )
             }
         }
         scan.setOnClickListener {
@@ -109,7 +120,7 @@ class QrMakkerActivity : AppCompatActivity() {
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
-        if (requestCode == REQUEST_CODE){
+        if (requestCode == code){
             if (grantResults.isNotEmpty() &&grantResults[0] == PackageManager.PERMISSION_GRANTED){
                 saveImage()
             }else{
@@ -135,9 +146,7 @@ class QrMakkerActivity : AppCompatActivity() {
             MediaStore.Images.Media.DISPLAY_NAME,
             System.currentTimeMillis().toString() + ".jpg"
         )
-        contentValues.put(
-            MediaStore.Images.Media.MIME_TYPE,
-            "images/"
+        contentValues.put(MediaStore.Images.Media.MIME_TYPE, "images/"
         )
         val uri: Uri = contentResolver.insert(image,contentValues)!!
         try {
@@ -156,6 +165,30 @@ class QrMakkerActivity : AppCompatActivity() {
             e.printStackTrace()
         }
     }
+    private fun shareImage(bitmap:Bitmap){
+        val file = File(applicationContext.externalCacheDir, "qrcode.png")
+        val fileOutputStream = FileOutputStream(file)
+        bitmap.compress(Bitmap.CompressFormat.PNG, 80, fileOutputStream)
+        fileOutputStream.flush()
+        fileOutputStream.close()
+        val fileProviderUri = FileProvider.getUriForFile(applicationContext.applicationContext,
+            "com.sayam.qrcode" + ".provider", file,)
+        val sendIntent: Intent = Intent().apply {
+            action = Intent.ACTION_SEND
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+            putExtra(Intent.EXTRA_STREAM, fileProviderUri)
+            type = "image/png"
+        }
 
+
+        val shareIntent = Intent.createChooser(sendIntent, null)
+
+        if (shareIntent.resolveActivity(applicationContext.packageManager) != null) {
+            applicationContext.startActivity(shareIntent)
+        } else {
+            Toast.makeText(applicationContext, "Error Occurred Please Try Again", Toast.LENGTH_SHORT).show()
+        }
+    }
 
 }
