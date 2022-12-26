@@ -9,4 +9,8 @@
     <string name="scan_now">Scan Now</string>
     <string name="save">Save</string>
     <string name="share">Share</string>
+    <string name="Ad_Unit_Id">ca-app-pub-8645983386530902~1322418129</string>
+    <string name="Banner_Ad_Unit_Id">ca-app-pub-8645983386530902/8136373952</string>
+    <string name="Inter_Ad_Unit_Id_Save">ca-app-pub-8645983386530902/6624577545</string>
+    <string name="Inter_Ad_Unit_Id_Share">ca-app-pub-8645983386530902/9985238052</string>
 </resources>

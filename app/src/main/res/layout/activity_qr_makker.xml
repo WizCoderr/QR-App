@@ -6,49 +6,60 @@
     android:layout_height="match_parent"
     tools:context=".QrMakkerActivity">
 
+
     <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/et_link"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"
         android:background="@drawable/layout_bg"
+        android:gravity="center_horizontal"
         android:hint="@string/enter_the_link"
-        android:minHeight="24dp"
         android:minWidth="23dp"
+        android:padding="23dp"
         android:textColorHint="@color/black"
-        android:gravity="center"
-        android:padding="34dp"
+        android:textSize="19sp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/qrImg"
+    <LinearLayout
+        android:id="@+id/ll"
         android:layout_width="0dp"
         android:layout_height="234dp"
-        android:src="@drawable/ic_coder"
-        android:layout_marginTop="16dp"
+        android:layout_marginVertical="2dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@+id/linerLayout"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/et_link" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/et_link">
 
+        <ImageView
+            android:id="@+id/qrImg"
+            android:contentDescription="@string/scan"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/ic_coder" />
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/linerLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
         android:orientation="vertical"
-        android:padding="13dp"
-        app:layout_constraintBottom_toTopOf="@id/ads"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/qrImg">
+        app:layout_constraintBottom_toTopOf="@+id/ads"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent">
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/generate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="13dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
             android:background="@drawable/btn_bg"
             android:padding="15dp"
             android:text="@string/generate"
@@ -59,7 +70,9 @@
             android:id="@+id/save"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="13dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
             android:background="@drawable/btn_bg"
             android:padding="15dp"
             android:text="@string/save"
@@ -70,7 +83,9 @@
             android:id="@+id/share"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="13dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
             android:background="@drawable/btn_bg"
             android:padding="15dp"
             android:text="@string/share"
@@ -81,7 +96,9 @@
             android:id="@+id/scan"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="13dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
             android:background="@drawable/btn_bg"
             android:padding="15dp"
             android:text="@string/scan"
@@ -94,10 +111,10 @@
         android:id="@+id/ads"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
         app:adSize="SMART_BANNER"
-        app:adUnitId="ca-app-pub-8645983386530902/8136373952"
+        app:adUnitId="@string/Banner_Ad_Unit_Id"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"/>
+        app:layout_constraintStart_toStartOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

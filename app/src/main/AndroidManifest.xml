@@ -16,26 +16,14 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/SplashScreen"
-        tools:targetApi="31">
-        
-        <provider
-            android:authorities="${applicationId}.provider"
-            android:name="androidx.core.content.FileProvider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/provider"/>
-        </provider>
-        
+        tools:targetApi="33">
         
         <activity
             android:name=".QrScannerActivity"
-            android:exported="false" />
+            android:exported="false"/>
         <activity
             android:name=".QrMakkerActivity"
-            android:exported="false" />
+            android:exported="false"/>
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -45,10 +33,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.example.myapp.fileprovider"
+            android:grantUriPermissions="true"
+            android:exported="false">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider" />
+        </provider>
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-8645983386530902~1322418129"/>
+            android:value="@string/Ad_Unit_Id"/>
 
     </application>
 
