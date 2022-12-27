@@ -31,18 +31,18 @@ import java.io.OutputStream
 
 @Suppress("DEPRECATION", "CAST_NEVER_SUCCEEDS")
 class QrMakkerActivity : AppCompatActivity() {
-    private lateinit var link:AppCompatEditText
-    private lateinit var qrImage:AppCompatImageView
+     private lateinit var link:AppCompatEditText
+     private lateinit var qrImage:AppCompatImageView
      private lateinit var generate:AppCompatButton
      private lateinit var save:AppCompatButton
-      var mAdManagerInterstitialAd:InterstitialAd? = null
-      var mInterstitialAd:InterstitialAd? = null
-    private lateinit var share:AppCompatButton
-      val code: Int = 123
-    private lateinit var scan:AppCompatButton
-    private lateinit var outputStream: OutputStream
-    private  lateinit var mAdView:AdView
-    private lateinit var bitmap:Bitmap
+     var mAdManagerInterstitialAd:InterstitialAd? = null
+     var mInterstitialAd:InterstitialAd? = null
+     private lateinit var share:AppCompatButton
+     val code: Int = 123
+     private lateinit var scan:AppCompatButton
+     private lateinit var outputStream: OutputStream
+     private  lateinit var mAdView:AdView
+     private lateinit var bitmap:Bitmap
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_qr_makker)
@@ -208,11 +208,7 @@ class QrMakkerActivity : AppCompatActivity() {
         }
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>,grantResults: IntArray) {
         if (requestCode == code){
             if (grantResults.isNotEmpty() &&grantResults[0] == PackageManager.PERMISSION_GRANTED){
                 saveImage()
