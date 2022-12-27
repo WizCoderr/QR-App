@@ -74,12 +74,12 @@ class QrMakkerActivity : AppCompatActivity() {
             }
         }
         share.setOnClickListener{
-            mInterstitialAd?.show(this@QrMakkerActivity)
+            mInterstitialAd!!.show(this@QrMakkerActivity)
         }
         save.setOnClickListener {
             if(ContextCompat.checkSelfPermission(this@QrMakkerActivity,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
-                mAdManagerInterstitialAd?.show(this@QrMakkerActivity)
+                mAdManagerInterstitialAd!!.show(this@QrMakkerActivity)
             }else{
                 ActivityCompat.requestPermissions(this@QrMakkerActivity, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),code)
             }
@@ -92,6 +92,7 @@ class QrMakkerActivity : AppCompatActivity() {
         // InterstitialAd to save
         InterstitialAd.load(this,getString(R.string.Inter_Ad_Unit_Id_Save),adRequest,object:InterstitialAdLoadCallback(){
             override fun onAdFailedToLoad(adError: LoadAdError) {
+                Toast.makeText(this@QrMakkerActivity, "Error $adError",Toast.LENGTH_LONG).show()
                 Log.d("TAG", adError.toString())
                 mAdManagerInterstitialAd = null
             }
@@ -102,11 +103,13 @@ class QrMakkerActivity : AppCompatActivity() {
                 mAdManagerInterstitialAd?.fullScreenContentCallback = object: FullScreenContentCallback() {
                     override fun onAdClicked() {
                         // Called when a click is recorded for an ad.
+                        Toast.makeText(this@QrMakkerActivity, "Ad was Clicked.",Toast.LENGTH_LONG).show()
                         Log.d("TAG", "Ad was clicked.")
                     }
 
                     override fun onAdDismissedFullScreenContent() {
                         // Called when ad is dismissed.
+                        Toast.makeText(this@QrMakkerActivity, "Ad dismissed full screen.",Toast.LENGTH_LONG).show()
                         Log.d("TAG", "Ad dismissed fullscreen content.")
                         mAdManagerInterstitialAd = null
                        // Save the image
@@ -135,6 +138,7 @@ class QrMakkerActivity : AppCompatActivity() {
         // InterstitialAd for share
         InterstitialAd.load(this,getString(R.string.Inter_Ad_Unit_Id_Share),adRequest,object:InterstitialAdLoadCallback(){
             override fun onAdFailedToLoad(adError: LoadAdError) {
+                Toast.makeText(this@QrMakkerActivity, "Error $adError",Toast.LENGTH_LONG).show()
                 Log.d("TAG", adError.toString())
                 mInterstitialAd = null
             }
@@ -145,6 +149,7 @@ class QrMakkerActivity : AppCompatActivity() {
                 mInterstitialAd?.fullScreenContentCallback = object: FullScreenContentCallback() {
                     override fun onAdClicked() {
                         // Called when a click is recorded for an ad.
+                        Toast.makeText(this@QrMakkerActivity, "Ad was clicked.",Toast.LENGTH_LONG).show()
                         Log.d("TAG", "Ad was clicked.")
                     }
 
@@ -212,11 +217,7 @@ class QrMakkerActivity : AppCompatActivity() {
             if (grantResults.isNotEmpty() &&grantResults[0] == PackageManager.PERMISSION_GRANTED){
                 saveImage()
             }else{
-                Toast.makeText(
-                    this@QrMakkerActivity,
-                    "Please provide the permission"
-                    ,Toast.LENGTH_LONG
-                ).show()
+                Toast.makeText( this@QrMakkerActivity, "Please provide the permission",Toast.LENGTH_LONG).show()
             }
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
@@ -275,6 +276,4 @@ class QrMakkerActivity : AppCompatActivity() {
          else
             Toast.makeText(context, "Error Occurred Please Try Again", Toast.LENGTH_SHORT).show()
     }
-
-    //Inter Ads
 }
