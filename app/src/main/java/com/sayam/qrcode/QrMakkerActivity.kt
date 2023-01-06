@@ -35,14 +35,13 @@ class QrMakkerActivity : AppCompatActivity() {
      private lateinit var qrImage:AppCompatImageView
      private lateinit var generate:AppCompatButton
      private lateinit var save:AppCompatButton
-     var mAdManagerInterstitialAd:InterstitialAd? = null
-     var mInterstitialAd:InterstitialAd? = null
      private lateinit var share:AppCompatButton
      val code: Int = 123
      private lateinit var scan:AppCompatButton
      private lateinit var outputStream: OutputStream
      private  lateinit var mAdView:AdView
-     private lateinit var bitmap:Bitmap
+    private var saveInterstitialAd: InterstitialAd? = null
+    private var shareInterstitialAd: InterstitialAd? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_qr_makker)
@@ -55,8 +54,7 @@ class QrMakkerActivity : AppCompatActivity() {
         generate = findViewById(R.id.generate)
         save = findViewById(R.id.save)
         share = findViewById(R.id.share)
-//        bitmapDrawable = qrImage.drawable as BitmapDrawable
-        bitmap = qrImage.drawable.toBitmap()
+        val bitmaps = qrImage.drawable.toBitmap()
         scan = findViewById(R.id.scan)
         generate.setOnClickListener {
             val data = link.text.toString()
@@ -74,14 +72,29 @@ class QrMakkerActivity : AppCompatActivity() {
             }
         }
         share.setOnClickListener{
-            mInterstitialAd!!.show(this@QrMakkerActivity)
+            if (shareInterstitialAd == null){
+                shareImage(bitmaps, this@QrMakkerActivity)
+            }else{
+                shareInterstitialAd!!.show(this)
+            }
         }
         save.setOnClickListener {
-            if(ContextCompat.checkSelfPermission(this@QrMakkerActivity,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
-                mAdManagerInterstitialAd!!.show(this@QrMakkerActivity)
+            if (saveInterstitialAd == null){
+                if (ContextCompat.checkSelfPermission(
+                        this@QrMakkerActivity,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    ) == PackageManager.PERMISSION_GRANTED
+                ) {
+                    saveImage()
+                } else {
+                    ActivityCompat.requestPermissions(
+                        this@QrMakkerActivity,
+                        arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                        code
+                    )
+                }
             }else{
-                ActivityCompat.requestPermissions(this@QrMakkerActivity, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),code)
+                saveInterstitialAd!!.show(this)
             }
         }
         scan.setOnClickListener {
@@ -90,95 +103,52 @@ class QrMakkerActivity : AppCompatActivity() {
         }
 
         // InterstitialAd to save
-        InterstitialAd.load(this,getString(R.string.Inter_Ad_Unit_Id_Save),adRequest,object:InterstitialAdLoadCallback(){
-            override fun onAdFailedToLoad(adError: LoadAdError) {
-                Toast.makeText(this@QrMakkerActivity, "Error $adError",Toast.LENGTH_LONG).show()
-                Log.d("TAG", adError.toString())
-                mAdManagerInterstitialAd = null
-            }
+       InterstitialAd.load(this,getString(R.string.Inter_Ad_Unit_Id_Save),adRequest,object: InterstitialAdLoadCallback() {
+           override fun onAdFailedToLoad(loadError: LoadAdError) {
+               Log.d("TAG", "onAdFailedToLoad: Error: ${loadError.toString()}")
+               saveInterstitialAd = null;
+           }
 
-            override fun onAdLoaded(interstitialAd: InterstitialAd) {
-                Log.d("TAG", "Ad was loaded.")
-                mAdManagerInterstitialAd = interstitialAd
-                mAdManagerInterstitialAd?.fullScreenContentCallback = object: FullScreenContentCallback() {
-                    override fun onAdClicked() {
-                        // Called when a click is recorded for an ad.
-                        Toast.makeText(this@QrMakkerActivity, "Ad was Clicked.",Toast.LENGTH_LONG).show()
-                        Log.d("TAG", "Ad was clicked.")
-                    }
+           override fun onAdLoaded(interstitialAd: InterstitialAd) {
+               saveInterstitialAd = interstitialAd
+               saveInterstitialAd!!.fullScreenContentCallback = object: FullScreenContentCallback() {
+                   override fun onAdDismissedFullScreenContent() {
+                       if(ContextCompat.checkSelfPermission(this@QrMakkerActivity,
+                               Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
+                           saveImage()
+                       }else{
+                           ActivityCompat.requestPermissions(this@QrMakkerActivity, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),code)
+                       }
+                   }
 
-                    override fun onAdDismissedFullScreenContent() {
-                        // Called when ad is dismissed.
-                        Toast.makeText(this@QrMakkerActivity, "Ad dismissed full screen.",Toast.LENGTH_LONG).show()
-                        Log.d("TAG", "Ad dismissed fullscreen content.")
-                        mAdManagerInterstitialAd = null
-                       // Save the image
-                        saveImage()
-                    }
+                   override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+                       saveInterstitialAd = null;
+                       Log.d("TAG", "onAdFailedToShowFullScreenContent: Error: ${adError.message}")
+                   }
+               }
+           }
+       })
+        // InterstitialAd to share
+       InterstitialAd.load(this,getString(R.string.Inter_Ad_Unit_Id_Save),adRequest,object: InterstitialAdLoadCallback() {
+           override fun onAdFailedToLoad(loadError: LoadAdError) {
+               Log.d("TAG", "onAdFailedToLoad: Error: ${loadError.toString()}")
+               shareInterstitialAd = null;
+           }
 
-                    override fun onAdFailedToShowFullScreenContent(p0: AdError) {
-                        // Called when ad fails to show.
-                        Log.e("TAG", "Ad failed to show fullscreen content.")
-                        mAdManagerInterstitialAd = null
-                    }
+           override fun onAdLoaded(interstitialAd: InterstitialAd) {
+               shareInterstitialAd = interstitialAd
+               shareInterstitialAd!!.fullScreenContentCallback = object: FullScreenContentCallback() {
+                   override fun onAdDismissedFullScreenContent() {
+                       shareImage(bitmaps,this@QrMakkerActivity)
+                   }
 
-                    override fun onAdImpression() {
-                        // Called when an impression is recorded for an ad.
-                        Log.d("TAG", "Ad recorded an impression.")
-                    }
-
-                    override fun onAdShowedFullScreenContent() {
-                        // Called when ad is shown.
-                        Log.d("TAG", "Ad showed fullscreen content.")
-                    }
-                }
-            }
-        })
-
-        // InterstitialAd for share
-        InterstitialAd.load(this,getString(R.string.Inter_Ad_Unit_Id_Share),adRequest,object:InterstitialAdLoadCallback(){
-            override fun onAdFailedToLoad(adError: LoadAdError) {
-                Toast.makeText(this@QrMakkerActivity, "Error $adError",Toast.LENGTH_LONG).show()
-                Log.d("TAG", adError.toString())
-                mInterstitialAd = null
-            }
-
-            override fun onAdLoaded(interstitialAd: InterstitialAd) {
-                Log.d("TAG", "Ad was loaded.")
-                mInterstitialAd = interstitialAd
-                mInterstitialAd?.fullScreenContentCallback = object: FullScreenContentCallback() {
-                    override fun onAdClicked() {
-                        // Called when a click is recorded for an ad.
-                        Toast.makeText(this@QrMakkerActivity, "Ad was clicked.",Toast.LENGTH_LONG).show()
-                        Log.d("TAG", "Ad was clicked.")
-                    }
-
-                    override fun onAdDismissedFullScreenContent() {
-                        // Called when ad is dismissed.
-                        Log.d("TAG", "Ad dismissed fullscreen content.")
-                        mInterstitialAd = null
-                        // Share the image
-                        shareImage(bitmap,this@QrMakkerActivity)
-                    }
-
-                    override fun onAdFailedToShowFullScreenContent(p0: AdError) {
-                        // Called when ad fails to show.
-                        Log.e("TAG", "Ad failed to show fullscreen content.")
-                        mInterstitialAd = null
-                    }
-
-                    override fun onAdImpression() {
-                        // Called when an impression is recorded for an ad.
-                        Log.d("TAG", "Ad recorded an impression.")
-                    }
-
-                    override fun onAdShowedFullScreenContent() {
-                        // Called when ad is shown.
-                        Log.d("TAG", "Ad showed fullscreen content.")
-                    }
-                }
-            }
-        })
+                   override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+                       shareInterstitialAd = null;
+                       Log.d("TAG", "onAdFailedToShowFullScreenContent: Error: ${adError.message}")
+                   }
+               }
+           }
+       })
         // Ad Functions
         mAdView.adListener = object: AdListener() {
             override fun onAdClicked() {
@@ -220,6 +190,7 @@ class QrMakkerActivity : AppCompatActivity() {
     }
 
     private fun saveImage() {
+//        mAdManagerInterstitialAd!!.show(this@QrMakkerActivity)
         val contentResolver:ContentResolver = contentResolver
         val image:Uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
@@ -251,13 +222,14 @@ class QrMakkerActivity : AppCompatActivity() {
         }
     }
     private fun shareImage(bitmap:Bitmap,context:Context){
+//        mInterstitialAd!!.show(this@QrMakkerActivity)
         val file = File(context.externalCacheDir, "qrcode.png")
         val fileOutputStream = FileOutputStream(file)
         bitmap.compress(Bitmap.CompressFormat.PNG, 80, fileOutputStream)
         fileOutputStream.flush()
         fileOutputStream.close()
         val fileProviderUri = FileProvider.getUriForFile(applicationContext.applicationContext,
-            "com.sayam.qrcode" + ".provider", file,)
+            "com.sayam.qrcode" + ".provider", file)
         val sendIntent: Intent = Intent().apply {
             action = Intent.ACTION_SEND
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
