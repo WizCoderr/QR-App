@@ -7,27 +7,33 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.VectorDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.StrictMode
+import android.os.StrictMode.VmPolicy
 import android.provider.MediaStore
 import android.util.Log
-import android.widget.*
+import android.widget.Toast
 import androidmads.library.qrgenearator.QRGContents
 import androidmads.library.qrgenearator.QRGEncoder
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.*
+import androidx.appcompat.widget.AppCompatButton
+import androidx.appcompat.widget.AppCompatEditText
+import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import androidx.core.graphics.drawable.toBitmap
 import com.google.android.gms.ads.*
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
+
 
 @Suppress("DEPRECATION", "CAST_NEVER_SUCCEEDS")
 class QrMakkerActivity : AppCompatActivity() {
@@ -40,6 +46,7 @@ class QrMakkerActivity : AppCompatActivity() {
      private lateinit var scan:AppCompatButton
      private lateinit var outputStream: OutputStream
      private  lateinit var mAdView:AdView
+     private lateinit var mBitmap :Bitmap
     private var saveInterstitialAd: InterstitialAd? = null
     private var shareInterstitialAd: InterstitialAd? = null
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,7 +61,6 @@ class QrMakkerActivity : AppCompatActivity() {
         generate = findViewById(R.id.generate)
         save = findViewById(R.id.save)
         share = findViewById(R.id.share)
-        val bitmaps = qrImage.drawable.toBitmap()
         scan = findViewById(R.id.scan)
         generate.setOnClickListener {
             val data = link.text.toString()
@@ -65,7 +71,9 @@ class QrMakkerActivity : AppCompatActivity() {
                 val encoder = QRGEncoder(data, null, QRGContents.Type.TEXT, 500)
                 try {
                     val qrBitmap: Bitmap = encoder.bitmap
+                    mBitmap = qrBitmap
                     qrImage.setImageBitmap(qrBitmap)
+
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
@@ -73,7 +81,7 @@ class QrMakkerActivity : AppCompatActivity() {
         }
         share.setOnClickListener{
             if (shareInterstitialAd == null){
-                shareImage(bitmaps, this@QrMakkerActivity)
+                shareImage(mBitmap, this@QrMakkerActivity)
             }else{
                 shareInterstitialAd!!.show(this)
             }
@@ -139,7 +147,7 @@ class QrMakkerActivity : AppCompatActivity() {
                shareInterstitialAd = interstitialAd
                shareInterstitialAd!!.fullScreenContentCallback = object: FullScreenContentCallback() {
                    override fun onAdDismissedFullScreenContent() {
-                       shareImage(bitmaps,this@QrMakkerActivity)
+                       shareImage(mBitmap,this@QrMakkerActivity)
                    }
 
                    override fun onAdFailedToShowFullScreenContent(adError: AdError) {
@@ -151,29 +159,9 @@ class QrMakkerActivity : AppCompatActivity() {
        })
         // Ad Functions
         mAdView.adListener = object: AdListener() {
-            override fun onAdClicked() {
-                super.onAdClicked()
-            }
-
-            override fun onAdClosed() {
-                super.onAdClosed()
-            }
-
             override fun onAdFailedToLoad(adError : LoadAdError) {
                 super.onAdFailedToLoad(adError)
                 mAdView.loadAd(adRequest)
-            }
-
-            override fun onAdImpression() {
-                super.onAdImpression()
-            }
-
-            override fun onAdLoaded() {
-               super.onAdLoaded()
-            }
-
-            override fun onAdOpened() {
-                super.onAdOpened()
             }
         }
     }
@@ -222,26 +210,31 @@ class QrMakkerActivity : AppCompatActivity() {
         }
     }
     private fun shareImage(bitmap:Bitmap,context:Context){
-//        mInterstitialAd!!.show(this@QrMakkerActivity)
-        val file = File(context.externalCacheDir, "qrcode.png")
-        val fileOutputStream = FileOutputStream(file)
-        bitmap.compress(Bitmap.CompressFormat.PNG, 80, fileOutputStream)
-        fileOutputStream.flush()
-        fileOutputStream.close()
-        val fileProviderUri = FileProvider.getUriForFile(applicationContext.applicationContext,
-            "com.sayam.qrcode" + ".provider", file)
+        val builder = VmPolicy.Builder()
+        StrictMode.setVmPolicy(builder.build())
+        val file = File(externalCacheDir.toString() + "/" + " QrCode.png")
+        try{
+            val fileOutputStream = FileOutputStream(file)
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream)
+            fileOutputStream.flush()
+            fileOutputStream.close()
+        }catch (e:Exception){
+            throw  RuntimeException(e)
+        }
         val sendIntent: Intent = Intent().apply {
             action = Intent.ACTION_SEND
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
             flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
-            putExtra(Intent.EXTRA_STREAM, fileProviderUri)
+            putExtra(Intent.EXTRA_STREAM, FileProvider.getUriForFile(
+                applicationContext.applicationContext,
+                "com.sayam.qrcode" + ".provider", file
+            ))
             type = "image/png"
         }
-        val shareIntent = Intent.createChooser(sendIntent, null)
+        val shareIntent = Intent.createChooser(sendIntent, "Shae Via..")
 
         if (shareIntent.resolveActivity(context.packageManager) != null)
             context.startActivity(shareIntent)
-         else
-            Toast.makeText(context, "Error Occurred Please Try Again", Toast.LENGTH_SHORT).show()
+         else Toast.makeText(context, "Error Occurred Please Try Again", Toast.LENGTH_SHORT).show()
     }
 }
