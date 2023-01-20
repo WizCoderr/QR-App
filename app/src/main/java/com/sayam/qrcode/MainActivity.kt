@@ -1,17 +1,25 @@
 package com.sayam.qrcode
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
-import android.os.CountDownTimer
+import android.view.Window
+import android.view.WindowManager
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.ads.*
+
 
 class MainActivity : AppCompatActivity() {
     private lateinit var qrImage: ImageView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        val w: Window = window
+        w.setFlags(
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+        )
         MobileAds.initialize(this) {}
         qrImage = findViewById(R.id.iv_qr)
         startMainActivity()

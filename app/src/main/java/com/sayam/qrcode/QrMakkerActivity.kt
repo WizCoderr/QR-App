@@ -17,6 +17,8 @@ import android.os.StrictMode
 import android.os.StrictMode.VmPolicy
 import android.provider.MediaStore
 import android.util.Log
+import android.view.Window
+import android.view.WindowManager
 import android.widget.Toast
 import androidmads.library.qrgenearator.QRGContents
 import androidmads.library.qrgenearator.QRGEncoder
